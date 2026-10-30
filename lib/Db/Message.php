@@ -146,6 +146,9 @@ class Message extends Entity implements JsonSerializable {
 
 	/** @var bool */
 	private $fetchAvatarFromClient = false;
+
+	private bool $threadHasForwardedMessage = false;
+
 	/** @var array */
 	private $attachments = [];
 
@@ -317,6 +320,10 @@ class Message extends Entity implements JsonSerializable {
 		$this->fetchAvatarFromClient = $fetchAvatarFromClient;
 	}
 
+	public function setThreadHasForwardedMessage(bool $threadHasForwardedMessage): void {
+		$this->threadHasForwardedMessage = $threadHasForwardedMessage;
+	}
+
 	/**
 	 * @return ?Avatar
 	 */
@@ -342,7 +349,7 @@ class Message extends Entity implements JsonSerializable {
 			$tags
 		);
 
-		return [
+		$data = [
 			'databaseId' => $this->getId(),
 			'uid' => $this->getUid(),
 			'remoteId' => $this->getRemoteId(),
@@ -380,5 +387,9 @@ class Message extends Entity implements JsonSerializable {
 			'fetchAvatarFromClient' => $this->fetchAvatarFromClient,
 			'attachments' => $this->getAttachments(),
 		];
+		if ($this->threadHasForwardedMessage) {
+			$data['threadHasForwardedMessage'] = true;
+		}
+		return $data;
 	}
 }

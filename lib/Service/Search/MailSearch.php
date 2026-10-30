@@ -100,7 +100,7 @@ class MailSearch implements IMailSearch {
 			$query->addFlag(Flag::not(Flag::DELETED));
 		}
 
-		return $this->previewEnhancer->process(
+		$messages = $this->previewEnhancer->process(
 			$account,
 			$mailbox,
 			$this->messageMapper->findByIds($account->getUserId(),
@@ -110,6 +110,39 @@ class MailSearch implements IMailSearch {
 			true,
 			$userId
 		);
+
+		if ($query->getThreaded()) {
+			$this->markThreadsWithForwardedMessage($mailbox, $messages);
+		}
+
+		return $messages;
+	}
+
+	/**
+	 * The threaded list shows only the newest message per thread, so a forwarded
+	 * older message would otherwise never surface.
+	 *
+	 * @param Message[] $messages
+	 */
+	private function markThreadsWithForwardedMessage(Mailbox $mailbox, array $messages): void {
+		$rootsToCheck = [];
+		foreach ($messages as $message) {
+			$root = $message->getThreadRootId();
+			if ($root !== null && $message->getFlagForwarded() !== true) {
+				$rootsToCheck[$root] = true;
+			}
+		}
+		if ($rootsToCheck === []) {
+			return;
+		}
+
+		$forwardedRoots = array_flip($this->messageMapper->findThreadRootIdsWithForwardedMessage($mailbox, array_map('strval', array_keys($rootsToCheck))));
+		foreach ($messages as $message) {
+			$root = $message->getThreadRootId();
+			if ($root !== null && isset($forwardedRoots[$root])) {
+				$message->setThreadHasForwardedMessage(true);
+			}
+		}
 	}
 
 	/**

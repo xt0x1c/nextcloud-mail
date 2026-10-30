@@ -70,6 +70,10 @@
 							<AiIcon :size="14" />
 							{{ t('mail', 'Contains AI content') }}
 						</span>
+						<span v-if="envelope.flags.forwarded" class="forwarded-label">
+							<ForwardedIcon :size="14" />
+							{{ t('mail', 'Forwarded') }}
+						</span>
 					</div>
 					<NcButton
 						v-if="expanded && hasRecipients"
@@ -410,6 +414,7 @@ import LockIcon from 'vue-material-design-icons/LockOutline.vue'
 import LockPlusIcon from 'vue-material-design-icons/LockPlusOutline.vue'
 import ReplyAllIcon from 'vue-material-design-icons/ReplyAllOutline.vue'
 import ReplyIcon from 'vue-material-design-icons/ReplyOutline.vue'
+import ForwardedIcon from 'vue-material-design-icons/ShareOutline.vue'
 import IconFavorite from 'vue-material-design-icons/Star.vue'
 import StarOutline from 'vue-material-design-icons/StarOutline.vue'
 import DeleteIcon from 'vue-material-design-icons/TrashCanOutline.vue'
@@ -487,6 +492,7 @@ export default {
 		NcActions,
 		NcActionText,
 		ReplyIcon,
+		ForwardedIcon,
 		ReplyAllIcon,
 		SourceModal,
 	},
@@ -1527,7 +1533,8 @@ export default {
 		align-items: center;
 	}
 
-	.ai-generated-label {
+	.ai-generated-label,
+	.forwarded-label {
 		display: flex;
 		align-items: center;
 		gap: var(--default-grid-baseline);

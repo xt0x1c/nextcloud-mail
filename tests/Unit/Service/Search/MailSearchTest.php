@@ -164,6 +164,56 @@ class MailSearchTest extends TestCase {
 		$this->assertCount(2, $messages);
 	}
 
+	public function testFindMessagesMarksThreadsWithForwardedMessage(): void {
+		$account = $this->createMock(Account::class);
+		$account->method('getUserId')->willReturn('admin');
+		$mailbox = new Mailbox();
+		$mailbox->setId(7);
+		$mailbox->setSyncNewToken('abc');
+		$mailbox->setSyncChangedToken('def');
+		$mailbox->setSyncVanishedToken('ghi');
+		$this->filterStringParser->method('parse')->willReturn(new SearchQuery());
+		$forwardedThread = new Message();
+		$forwardedThread->setThreadRootId('root-a');
+		$forwardedThread->setFlagForwarded(false);
+		$otherThread = new Message();
+		$otherThread->setThreadRootId('root-b');
+		$otherThread->setFlagForwarded(false);
+		$this->messageMapper->method('findByIds')->willReturn([$forwardedThread, $otherThread]);
+		$this->previewEnhancer->method('process')->willReturnArgument(2);
+		$this->messageMapper->expects($this->once())
+			->method('findThreadRootIdsWithForwardedMessage')
+			->with($mailbox, ['<root-a>', '<root-b>'])
+			->willReturn(['<root-a>']);
+
+		$messages = $this->search->findMessages($account, $mailbox, 'DESC', null, null, null, null, MailSearch::VIEW_THREADED);
+
+		$this->assertTrue($messages[0]->jsonSerialize()['threadHasForwardedMessage']);
+		$this->assertFalse($messages[0]->jsonSerialize()['flags']['forwarded']);
+		$this->assertArrayNotHasKey('threadHasForwardedMessage', $messages[1]->jsonSerialize());
+		$this->assertArrayNotHasKey('threadHasForwardedMessage', $forwardedThread->getUpdatedFields());
+	}
+
+	public function testFindMessagesSingletonDoesNotMarkThreads(): void {
+		$account = $this->createMock(Account::class);
+		$account->method('getUserId')->willReturn('admin');
+		$mailbox = new Mailbox();
+		$mailbox->setSyncNewToken('abc');
+		$mailbox->setSyncChangedToken('def');
+		$mailbox->setSyncVanishedToken('ghi');
+		$this->filterStringParser->method('parse')->willReturn(new SearchQuery());
+		$message = new Message();
+		$message->setThreadRootId('root-a');
+		$this->messageMapper->method('findByIds')->willReturn([$message]);
+		$this->previewEnhancer->method('process')->willReturnArgument(2);
+		$this->messageMapper->expects($this->never())
+			->method('findThreadRootIdsWithForwardedMessage');
+
+		$messages = $this->search->findMessages($account, $mailbox, 'DESC', null, null, null, null, MailSearch::VIEW_SINGLETON);
+
+		$this->assertArrayNotHasKey('threadHasForwardedMessage', $messages[0]->jsonSerialize());
+	}
+
 	public function testFindText() {
 		$account = $this->createMock(Account::class);
 		$account->expects($this->once())

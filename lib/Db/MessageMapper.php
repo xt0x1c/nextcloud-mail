@@ -1328,6 +1328,35 @@ class MessageMapper extends QBMapper {
 	 *
 	 * @return Message[]
 	 */
+	/**
+	 * @param string[] $threadRootIds
+	 * @return string[]
+	 */
+	public function findThreadRootIdsWithForwardedMessage(Mailbox $mailbox, array $threadRootIds): array {
+		if ($threadRootIds === []) {
+			return [];
+		}
+		$qb = $this->db->getQueryBuilder();
+		$qb->selectDistinct('thread_root_id')
+			->from($this->getTableName())
+			->where(
+				$qb->expr()->eq('mailbox_id', $qb->createNamedParameter($mailbox->getId(), IQueryBuilder::PARAM_INT), IQueryBuilder::PARAM_INT),
+				$qb->expr()->eq('flag_forwarded', $qb->createNamedParameter(true, IQueryBuilder::PARAM_BOOL), IQueryBuilder::PARAM_BOOL),
+				$qb->expr()->in('thread_root_id', $qb->createParameter('roots'), IQueryBuilder::PARAM_STR_ARRAY),
+			);
+
+		$roots = [];
+		foreach (array_chunk($threadRootIds, 1000) as $chunk) {
+			$qb->setParameter('roots', $chunk, IQueryBuilder::PARAM_STR_ARRAY);
+			$result = $qb->executeQuery();
+			while (($row = $result->fetch()) !== false) {
+				$roots[] = (string)$row['thread_root_id'];
+			}
+			$result->closeCursor();
+		}
+		return $roots;
+	}
+
 	public function findByIds(string $userId, array $ids, string $sortOrder, string $orderBy = 'sent_at'): array {
 		if ($ids === []) {
 			return [];
