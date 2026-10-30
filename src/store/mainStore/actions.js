@@ -1081,6 +1081,29 @@ export default function mainStoreActions() {
 				}
 			})
 		},
+		async markEnvelopesForwarded(ids) {
+			return handleHttpAuthErrors(async () => {
+				for (const id of ids) {
+					try {
+						await setEnvelopeFlags(id, {
+							$forwarded: true,
+						})
+					} catch (error) {
+						logger.warn('Could not mark message as forwarded', { id, error })
+						continue
+					}
+
+					const envelope = this.getEnvelope(id)
+					if (envelope) {
+						this.flagEnvelopeMutation({
+							envelope,
+							flag: 'forwarded',
+							value: true,
+						})
+					}
+				}
+			})
+		},
 		async toggleEnvelopeImportant(envelope) {
 			return handleHttpAuthErrors(async () => {
 				const importantLabel = '$label1'

@@ -458,6 +458,8 @@ export default {
 			if (this.sending) {
 				return
 			}
+			const forwardedIds = [this.composerData.forwardFrom?.databaseId, ...this.forwardedMessages].filter((id) => id !== undefined && id !== null)
+			const mainStore = this.mainStore
 			await this.attachmentsPromise
 			this.uploadingAttachments = false
 			this.sending = true
@@ -523,7 +525,11 @@ export default {
 
 				if (!data.sendAt || data.sendAt < Math.floor((now + UNDO_DELAY) / 1000)) {
 					// Awaiting here would keep the modal open for a long time and thus block the user
-					this.outboxStore.sendMessageWithUndo({ id: dataForServer.id }).catch((error) => {
+					this.outboxStore.sendMessageWithUndo({ id: dataForServer.id }).then(async (wasSent) => {
+						if (wasSent && forwardedIds.length > 0) {
+							await mainStore.markEnvelopesForwarded(forwardedIds)
+						}
+					}).catch((error) => {
 						logger.debug('Could not send message', { error })
 					})
 				}

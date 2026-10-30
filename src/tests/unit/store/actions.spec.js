@@ -677,6 +677,31 @@ describe('Vuex store actions', () => {
 		)
 	})
 
+	describe('markEnvelopesForwarded', () => {
+		it('sets the forwarded flag on the server and in the store', async () => {
+			store.envelopes = { 11: { databaseId: 11, mailboxId: 1, flags: { forwarded: false } } }
+			MessageService.setEnvelopeFlags.mockResolvedValue(undefined)
+
+			await store.markEnvelopesForwarded([11])
+
+			expect(MessageService.setEnvelopeFlags).toHaveBeenCalledWith(11, { $forwarded: true })
+			expect(store.getEnvelope(11).flags.forwarded).toBe(true)
+		})
+
+		it('continues with the next message when flagging one fails', async () => {
+			MessageService.setEnvelopeFlags.mockImplementation(async (id) => {
+				if (id === 11) {
+					throw new Error('IMAP error')
+				}
+			})
+
+			await store.markEnvelopesForwarded([11, 12])
+
+			expect(MessageService.setEnvelopeFlags).toHaveBeenCalledTimes(2)
+			expect(MessageService.setEnvelopeFlags).toHaveBeenLastCalledWith(12, { $forwarded: true })
+		})
+	})
+
 	describe('prepareAttachments', () => {
 		const original = {
 			mailboxId: 1,
