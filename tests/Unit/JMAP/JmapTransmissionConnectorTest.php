@@ -234,4 +234,21 @@ class JmapTransmissionConnectorTest extends TestCase {
 		$sentParameters->bind($wire);
 		$this->assertSame(' 1', $wire->{'header:' . LocalMessage::HEADER_AI_GENERATED . ':asRaw'} ?? null);
 	}
+
+	public function testSendMessageForwardReferencesOriginalWithoutInReplyTo(): void {
+		[$account, $message, $sentMailbox] = $this->prepareSend();
+		$message->setForwardedMessageId('<original@example.com>');
+		$sentParameters = null;
+		$this->jmapOperationsService->expects(self::once())
+			->method('entitySend')
+			->willReturnCallback(function (string $identity, MailParametersRequest $parameters) use (&$sentParameters) {
+				$sentParameters = $parameters;
+			});
+
+		$this->connector->sendMessage($account, $message, $sentMailbox);
+
+		$sentParameters->bind($wire);
+		$this->assertSame(['<original@example.com>'], $wire->references ?? null);
+		$this->assertFalse(isset($wire->inReplyTo));
+	}
 }

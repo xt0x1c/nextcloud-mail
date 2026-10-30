@@ -122,6 +122,7 @@
 						:body="composerDataBodyAsTextInstance"
 						:editorBody="convertEditorBody(composerData)"
 						:inReplyToMessageId="composerData.inReplyToMessageId"
+						:forwardedMessageId="composerData.forwardedMessageId"
 						:replyTo="composerData.replyTo"
 						:forwardFrom="composerData.forwardFrom"
 						:sendAt="composerData.sendAt * 1000"
@@ -431,6 +432,7 @@ export default {
 				attachments: data.attachments,
 				aliasId: data.aliasId,
 				inReplyToMessageId: data.inReplyToMessageId,
+				forwardedMessageId: data.forwardedMessageId,
 				sendAt: data.sendAt,
 				draftId: this.composerData?.draftId,
 			}

@@ -119,6 +119,65 @@ describe('Composer', () => {
 		expect(composerData.inReplyToMessageId).toEqual('abc123')
 	})
 
+	it('references the original message when forwarding', () => {
+		const view = shallowMount(Composer, {
+			props: {
+				forwardFrom: {
+					messageId: '<original@example.com>',
+					from: [{ label: 'Alice', email: 'alice@example.com' }],
+					dateInt: 1700000000,
+				},
+				isFirstOpen: false,
+				accounts: [
+					{
+						id: 123,
+						editorMode: 'plaintext',
+						isUnified: false,
+						aliases: [],
+					},
+				],
+			},
+			global: {
+				mixins: [Nextcloud],
+				mocks: {
+					$route,
+				},
+			},
+		})
+
+		const composerData = view.vm.getMessageData()
+
+		expect(composerData.forwardedMessageId).toEqual('<original@example.com>')
+		expect(composerData.inReplyToMessageId).toBeUndefined()
+	})
+
+	it('keeps the forwarded message ID of a restored draft', () => {
+		const view = shallowMount(Composer, {
+			props: {
+				forwardedMessageId: '<original@example.com>',
+				isFirstOpen: false,
+				accounts: [
+					{
+						id: 123,
+						editorMode: 'plaintext',
+						isUnified: false,
+						aliases: [],
+					},
+				],
+			},
+			global: {
+				mixins: [Nextcloud],
+				mocks: {
+					$route,
+				},
+			},
+		})
+
+		const composerData = view.vm.getMessageData()
+
+		expect(composerData.forwardedMessageId).toEqual('<original@example.com>')
+	})
+
 	it('disabled the send button', () => {
 		const view = shallowMount(Composer, {
 			props: {

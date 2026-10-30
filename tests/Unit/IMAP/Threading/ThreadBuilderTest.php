@@ -135,6 +135,30 @@ class ThreadBuilderTest extends TestCase {
 		);
 	}
 
+	public function testBuildForwardReferencingOriginalJoinsThread(): void {
+		$messages = [
+			new Message('s1', 'id1', []),
+			new Message('Fwd: s1', 'id2', ['id1']),
+		];
+
+		$result = $this->builder->build($messages, $this->logger);
+
+		$this->assertEquals(
+			[
+				[
+					'id' => 'id1',
+					'children' => [
+						[
+							'id' => 'id2',
+							'children' => [],
+						],
+					],
+				],
+			],
+			$this->abstract($result)
+		);
+	}
+
 	public function testBuildOneDeepNoReferences(): void {
 		$messages = [
 			new Message('s1', 'id1', []),

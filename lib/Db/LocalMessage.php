@@ -37,6 +37,8 @@ use function array_filter;
  * @method void setFailed(bool $failed)
  * @method string|null getInReplyToMessageId()
  * @method void setInReplyToMessageId(?string $inReplyToId)
+ * @method string|null getForwardedMessageId()
+ * @method void setForwardedMessageId(?string $forwardedMessageId)
  * @method int|null getUpdatedAt()
  * @method setUpdatedAt(?int $updatedAt)
  * @method bool|null isPgpMime()
@@ -108,6 +110,9 @@ class LocalMessage extends Entity implements JsonSerializable {
 
 	/** @var string|null */
 	protected $inReplyToMessageId;
+
+	/** @var string|null */
+	protected $forwardedMessageId;
 
 	/** @var array|null */
 	protected $attachments;
@@ -182,6 +187,7 @@ class LocalMessage extends Entity implements JsonSerializable {
 			'isHtml' => ($this->isHtml() === true),
 			'isPgpMime' => ($this->isPgpMime() === true),
 			'inReplyToMessageId' => $this->getInReplyToMessageId(),
+			'forwardedMessageId' => $this->getForwardedMessageId(),
 			'attachments' => $this->getAttachments(),
 			'from' => array_values(
 				array_filter($this->getRecipients(), static fn (Recipient $recipient) => $recipient->getType() === Recipient::TYPE_FROM)

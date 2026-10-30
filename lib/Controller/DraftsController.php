@@ -58,6 +58,7 @@ class DraftsController extends Controller {
 	 * @param array $attachments
 	 * @param int|null $aliasId
 	 * @param string|null $inReplyToMessageId
+	 * @param string|null $forwardedMessageId
 	 * @param int|null $smimeCertificateId
 	 * @param int|null $sendAt
 	 * @param int|null $draftId
@@ -88,7 +89,8 @@ class DraftsController extends Controller {
 		?int $draftId = null,
 		bool $requestMdn = false,
 		bool $isPgpMime = false,
-		bool $isAiGenerated = false) : JsonResponse {
+		bool $isAiGenerated = false,
+		?string $forwardedMessageId = null) : JsonResponse {
 		$effectiveUserId = $this->delegationService->resolveAccountUserId($accountId, $this->userId);
 		$account = $this->accountService->find($effectiveUserId, $accountId);
 		$message = new LocalMessage();
@@ -101,6 +103,7 @@ class DraftsController extends Controller {
 		$message->setHtml($isHtml);
 		$message->setEditorBody($editorBody);
 		$message->setInReplyToMessageId($inReplyToMessageId);
+		$message->setForwardedMessageId($forwardedMessageId);
 		$message->setUpdatedAt($this->timeFactory->getTime());
 		$message->setSendAt($sendAt);
 		$message->setSmimeSign($smimeSign);
@@ -138,6 +141,7 @@ class DraftsController extends Controller {
 	 * @param array $attachments
 	 * @param int|null $aliasId
 	 * @param string|null $inReplyToMessageId
+	 * @param string|null $forwardedMessageId
 	 * @param int|null $sendAt
 	 * @return JsonResponse
 	 */
@@ -163,7 +167,8 @@ class DraftsController extends Controller {
 		?int $sendAt = null,
 		bool $requestMdn = false,
 		bool $isPgpMime = false,
-		bool $isAiGenerated = false): JsonResponse {
+		bool $isAiGenerated = false,
+		?string $forwardedMessageId = null): JsonResponse {
 		$effectiveUserId = $this->delegationService->resolveLocalMessageUserId($id, $this->userId);
 		$message = $this->service->getMessage($id, $effectiveUserId);
 
@@ -180,6 +185,7 @@ class DraftsController extends Controller {
 		$message->setEditorBody($editorBody);
 		$message->setFailed($failed);
 		$message->setInReplyToMessageId($inReplyToMessageId);
+		$message->setForwardedMessageId($forwardedMessageId);
 		$message->setSendAt($sendAt);
 		$message->setUpdatedAt($this->timeFactory->getTime());
 		$message->setSmimeSign($smimeSign);

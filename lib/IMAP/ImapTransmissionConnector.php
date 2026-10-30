@@ -144,6 +144,8 @@ class ImapTransmissionConnector implements ITransmissionConnector {
 		if (($inReplyTo = $message->getInReplyToMessageId()) !== null) {
 			$fccHeaders->addHeader('References', $inReplyTo);
 			$fccHeaders->addHeader('In-Reply-To', $inReplyTo);
+		} elseif (($forwarded = $message->getForwardedMessageId()) !== null) {
+			$fccHeaders->addHeader('References', $forwarded);
 		}
 		if ($message->getRequestMdn()) {
 			$fccHeaders->addHeaderOb(new Horde_Mime_Headers_Addresses(Horde_Mime_Mdn::MDN_HEADER, $fromHorde));

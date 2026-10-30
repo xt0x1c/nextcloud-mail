@@ -677,6 +677,11 @@ export default {
 			default: undefined,
 		},
 
+		forwardedMessageId: {
+			type: String,
+			default: undefined,
+		},
+
 		replyTo: {
 			type: Object,
 			required: false,
@@ -1355,6 +1360,7 @@ export default {
 				subject: this.subjectVal,
 				attachments: this.attachments,
 				inReplyToMessageId: this.inReplyToMessageId ?? (this.replyTo ? this.replyTo.messageId : undefined),
+				forwardedMessageId: this.forwardedMessageId ?? this.forwardFrom?.messageId,
 				isHtml: !this.encrypt && !this.editorPlainText,
 				requestMdn: this.requestMdnVal,
 				isAiGenerated: this.isAiGeneratedVal,

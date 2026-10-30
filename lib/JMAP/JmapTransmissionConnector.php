@@ -176,6 +176,8 @@ class JmapTransmissionConnector implements ITransmissionConnector {
 		if (($inReplyTo = $lMessage->getInReplyToMessageId()) !== null) {
 			$jMessage->inReplyTo($inReplyTo);
 			$jMessage->references($inReplyTo);
+		} elseif (($forwarded = $lMessage->getForwardedMessageId()) !== null) {
+			$jMessage->references($forwarded);
 		}
 
 		$jMessage->subject($lMessage->getSubject() ?? '');

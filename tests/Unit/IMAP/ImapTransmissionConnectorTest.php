@@ -520,6 +520,32 @@ class ImapTransmissionConnectorTest extends TestCase {
 		return [$account, $mailbox, $localMessage];
 	}
 
+	public function testSendMessageForwardReferencesOriginalWithoutInReplyTo(): void {
+		[$account, $sentMailbox, $localMessage] = $this->prepareAiGeneratedMessage();
+		$localMessage->setForwardedMessageId('<original@example.com>');
+		$this->smtpClientFactory->method('create')
+			->willReturn(new Horde_Mail_Transport_Null());
+
+		$this->connector->sendMessage($account, $localMessage, $sentMailbox);
+
+		$this->assertStringContainsString('References: <original@example.com>', $localMessage->getRaw());
+		$this->assertStringNotContainsString('In-Reply-To:', $localMessage->getRaw());
+	}
+
+	public function testSendMessageReplyTakesPrecedenceOverForward(): void {
+		[$account, $sentMailbox, $localMessage] = $this->prepareAiGeneratedMessage();
+		$localMessage->setInReplyToMessageId('<reply@example.com>');
+		$localMessage->setForwardedMessageId('<original@example.com>');
+		$this->smtpClientFactory->method('create')
+			->willReturn(new Horde_Mail_Transport_Null());
+
+		$this->connector->sendMessage($account, $localMessage, $sentMailbox);
+
+		$this->assertStringContainsString('References: <reply@example.com>', $localMessage->getRaw());
+		$this->assertStringContainsString('In-Reply-To: <reply@example.com>', $localMessage->getRaw());
+		$this->assertStringNotContainsString('<original@example.com>', $localMessage->getRaw());
+	}
+
 	public function testSendMessageAddsAiGeneratedHeader(): void {
 		[$account, $sentMailbox, $localMessage] = $this->prepareAiGeneratedMessage();
 		$this->smtpClientFactory->method('create')
