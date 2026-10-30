@@ -136,6 +136,11 @@
 						v-if="data.flags.answered"
 						class="seen-icon-style"
 						:size="18" />
+					<ForwardedIcon
+						v-if="data.flags.forwarded || data.threadHasForwardedMessage"
+						class="seen-icon-style"
+						:title="t('mail', 'Forwarded')"
+						:size="18" />
 					<IconAttachment
 						v-if="data.flags.hasAttachments === true"
 						class="attachment-icon-style"
@@ -575,6 +580,7 @@ import IconAttachment from 'vue-material-design-icons/Paperclip.vue'
 import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import ReplyAllIcon from 'vue-material-design-icons/ReplyAllOutline.vue'
 import Reply from 'vue-material-design-icons/ReplyOutline.vue'
+import ForwardedIcon from 'vue-material-design-icons/ShareOutline.vue'
 import Star from 'vue-material-design-icons/Star.vue'
 import StarOutline from 'vue-material-design-icons/StarOutline.vue'
 import TagIcon from 'vue-material-design-icons/TagOutline.vue'
@@ -642,6 +648,7 @@ export default {
 		IconAttachment,
 		IconBullet,
 		Reply,
+		ForwardedIcon,
 		NcActionLink,
 		NcActionText,
 		DownloadIcon,
